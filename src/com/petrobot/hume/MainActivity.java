@@ -1892,7 +1892,7 @@ public class MainActivity extends Activity {
         if (it.rating > 0) meta.add(String.format(java.util.Locale.US, "\u2605 %.1f", it.rating));
         heroMeta.setText(String.join("  \u00B7  ", meta));
         heroOverview.setText(it.overview);
-        Suggestions.Provider p = it.provider();
+        Suggestions.Provider p = it.provider(this);
         heroBtnText.setText(p != null && !Suggestions.installed(this, p.pkg) ? "Get" : "\u25B6  Open");
         int icon = p == null ? 0 : getResources().getIdentifier("provider_" + p.jwShort, "drawable", getPackageName());
         heroProvider.setImageResource(icon);

@@ -62,4 +62,4 @@ Apache License 2.0 — see [LICENSE](LICENSE) and [NOTICE](NOTICE).
 ## Credits
 
 Inter font (SIL OFL) · Nayuki QR Code generator (MIT) · weather from Open-Meteo, MET Norway and
-wttr.in · recommendations from JustWatch / TMDB · news from Indian newsrooms' public RSS feeds.
+wttr.in · recommendations from JustWatch / TMDB / Stremio Cinemeta · news from Indian newsrooms' public RSS feeds.

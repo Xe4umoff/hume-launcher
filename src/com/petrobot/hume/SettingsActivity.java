@@ -283,11 +283,19 @@ public class SettingsActivity extends Activity {
         });
         if (Suggestions.showRecs(this)) {
             section("Recommendations");
-            row("Source", () -> Suggestions.source(this).equals(Suggestions.SRC_TMDB) ? "TMDB" : "JustWatch", this::chooseSource);
+            row("Source", () -> Suggestions.sourceName(Suggestions.source(this)), this::chooseSource);
             row("Content", () -> {
                 String t = Suggestions.types(this);
                 return t.equals("movie") ? "Movies" : t.equals("tv") ? "TV Series" : "Movies & Series";
             }, this::chooseTypes);
+        }
+        if (Suggestions.showRecs(this) && Suggestions.source(this).equals(Suggestions.SRC_STREMIO)) {
+            row("Opens in", () -> {
+                Suggestions.Provider p = Suggestions.stremioApp(this);
+                return Suggestions.installed(this, p.pkg) ? p.name : "Stremio (not installed)";
+            }, () -> Toast.makeText(this, "Titles open in Stremio, or in Nuvio when only Nuvio is installed.",
+                    Toast.LENGTH_LONG).show());
+        } else if (Suggestions.showRecs(this)) {
             row("Streaming services", () -> {
                 int n = Suggestions.providers(this).size();
                 return n == Suggestions.PROVIDERS.size() ? "All" : n + " selected";
@@ -656,14 +664,15 @@ public class SettingsActivity extends Activity {
     }
 
     void chooseSource() {
-        String[] keys = {Suggestions.SRC_JUSTWATCH, Suggestions.SRC_TMDB};
-        String[] names = {"JustWatch  (no setup needed)", "TMDB  (needs a free token)"};
-        int cur = Suggestions.source(this).equals(Suggestions.SRC_TMDB) ? 1 : 0;
+        String[] keys = {Suggestions.SRC_JUSTWATCH, Suggestions.SRC_TMDB, Suggestions.SRC_STREMIO};
+        String[] names = {"JustWatch  (no setup needed)", "TMDB  (needs a free token)", "Stremio  (opens in Stremio or Nuvio)"};
+        int cur = Math.max(0, java.util.Arrays.asList(keys).indexOf(Suggestions.source(this)));
         dialog("Recommendation source").setSingleChoiceItems(names, cur, (d, w) -> {
             Suggestions.prefs(this).edit().putString(Suggestions.K_SOURCE, keys[w]).apply();
             Suggestions.changed(this);
             refreshAll();
             d.dismiss();
+            show(SHELF);
             if (w == 1 && !Suggestions.hasToken(this)) enterToken();
         }).show();
     }
