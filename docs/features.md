@@ -57,7 +57,7 @@ Settings → Home → **Run setup again** repeats it. If Home is pressed mid-way
 | Carousel | Left / Right | Previous / next item (wraps around) |
 | Carousel (Continue Watching item) | Right | Moves from **Resume** to **Remove** |
 | Status row | Left / Right | Weather pill ⇄ Refresh ⇄ Search ⇄ Control Center ⇄ avatar |
-| Anywhere on Home | Hold Back (about half a second) | Opens Search (a short press of Back works as before) |
+| Anywhere on Home | Hold Back for 1 second | Opens Search (a short press of Back works as before) |
 | Anywhere on Home | Search key on remotes that have one | Opens Search and starts dictation |
 | Anywhere on Home | Keyboard: type a letter or digit · `/` · Ctrl+F · Ctrl+K | Opens Search (with the letter typed) |
 | Status row | Down | Carousel (or dock) |

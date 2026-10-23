@@ -3965,7 +3965,10 @@ public class MainActivity extends Activity {
         if (q != null && !q.isEmpty()) search.setQuery(q);
     }
 
-    /** Back pressed on Home, held until the long-press timeout: open Search (the release is swallowed). */
+    /** How long Back is held on Home to open Search. */
+    static final long BACK_HOLD_MS = 1000;
+
+    /** Back pressed on Home and held for BACK_HOLD_MS: open Search (the release is swallowed). */
     final Runnable backHold = () -> {
         backDown = null;
         swallowUp = true;
@@ -3984,10 +3987,7 @@ public class MainActivity extends Activity {
             if (ev.getRepeatCount() == 0) {
                 backDown = new KeyEvent(ev);
                 handler.removeCallbacks(backHold);
-                handler.postDelayed(backHold, android.view.ViewConfiguration.getLongPressTimeout());
-            } else if (ev.isLongPress() && backDown != null) {
-                handler.removeCallbacks(backHold);  // the system's own long-press signal came first
-                backHold.run();
+                handler.postDelayed(backHold, BACK_HOLD_MS);
             }
             return true;
         }
