@@ -514,6 +514,15 @@ public class SettingsActivity extends Activity {
                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             if (!Suggestions.start(this, i)) Toast.makeText(this, "This TV can't start the screensaver from an app", Toast.LENGTH_LONG).show();
         });
+        section("Search");
+        row("Movies & TV in search", () -> Search.titlesEnabled(this) ? "On" : "Off", () -> {
+            Search.prefs(this).edit().putBoolean(Search.K_TITLES, !Search.titlesEnabled(this)).apply();
+            refreshAll();
+        });
+        row("Recent searches", () -> Search.recent(this).isEmpty() ? "None" : "Clear", () -> {
+            Search.clearRecent(this);
+            refreshAll();
+        });
         section("Setup");
         row("Run setup again", () -> "", () -> startActivity(new Intent(this, SetupActivity.class)));
         row("Reset app layout", () -> "", () -> {

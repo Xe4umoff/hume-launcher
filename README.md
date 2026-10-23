@@ -14,7 +14,10 @@ runtime libraries; the APK is about 1 MB.
 - **Carousel**: Continue Watching first (Resume / Remove, expires after 7 days), then Indian news
   (India, your city, world) and rotating recommendations from your streaming services. Goes full
   screen when Home is idle.
-- **Status row**: internet indicator, time, Refresh, Control Center, profile avatar.
+- **Status row**: internet indicator, time, Refresh, Search, Control Center, profile avatar.
+- **Search**: apps, settings and inputs instantly, plus movies and shows on every streaming service
+  in India (Indian titles included, typed in English or Hindi, or spoken) with **Open** in the app
+  you have or **Get** for the one you don't.
 - **Weather**: a glass pill with a 5-day forecast panel (Open-Meteo, MET Norway or wttr.in — no keys).
 - **Control Center**: Power Off, Memory/Clean, Wi-Fi, Do Not Disturb, audio, sleep timer, inputs,
   settings, search.

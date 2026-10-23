@@ -5,7 +5,7 @@ Everything Hume Launcher does, by area. For how the code is organised see
 
 - [First-time setup](#first-time-setup)
 - [Home screen](#home-screen) · [Remote controls](#remote-controls)
-- [Status row](#status-row) · [Carousel (top shelf)](#carousel-top-shelf) · [Idle full-screen carousel](#idle-full-screen-carousel)
+- [Status row](#status-row) · [Search](#search) · [Carousel (top shelf)](#carousel-top-shelf) · [Idle full-screen carousel](#idle-full-screen-carousel)
 - [Weather](#weather) · [Control Center](#control-center) · [Profiles](#profiles) · [Inputs](#inputs)
 - [Presentation mode](#presentation-mode) · [Screensaver](#screensaver) · [AirPlay](#airplay-with-the-airplay-server-app)
 - [Navigation sounds](#navigation-sounds) · [Settings](#settings) · [Permissions](#permissions) · [Display scaling](#display-scaling)
@@ -56,7 +56,8 @@ Settings → Home → **Run setup again** repeats it. If Home is pressed mid-way
 | Dock | Up | Carousel |
 | Carousel | Left / Right | Previous / next item (wraps around) |
 | Carousel (Continue Watching item) | Right | Moves from **Resume** to **Remove** |
-| Status row | Left / Right | Weather pill ⇄ Refresh ⇄ Control Center ⇄ avatar |
+| Status row | Left / Right | Weather pill ⇄ Refresh ⇄ Search ⇄ Control Center ⇄ avatar |
+| Anywhere on Home | Search key on the remote | Opens Search |
 | Status row | Down | Carousel (or dock) |
 | Anywhere | Home | Closes any overlay and goes to the first app in the dock |
 | Idle screen | Any key | Brings the Home Screen back (the press doesn't move focus) |
@@ -71,10 +72,37 @@ Top right, as on tvOS:
   internet; dimmed bars with a slash when there is no network.
 - **Refresh**: fetches a fresh set of recommendations and news, reloads Continue Watching and
   forces a weather update.
-- **Control Center** and the **profile avatar**.
+- **Search**, **Control Center** and the **profile avatar**.
 
 Glass controls adapt to what is behind them: the backdrop is desaturated and the tint darkens over
 bright artwork and lightens over dark artwork, so white text stays legible.
+
+## Search
+
+The magnifier next to Control Center (or the remote's Search key) opens Search over the blurred
+Home Screen, as on tvOS: what you typed at the top, a one-row keyboard under it, results below.
+
+- **Keyboard**: a–z, space, delete, **123** (digits and punctuation), **अआ** (Hindi letters), a
+  **mic** where the TV has voice input, and clear. A USB/Bluetooth keyboard and the remote's number
+  keys type too.
+- **Before typing**: your recent searches (per profile) and what's trending in the carousel.
+- **Apps & Settings** (instant, no internet): installed apps including hidden ones, TV inputs
+  ("HDMI 2"), Hume screens (Control Center, Weather, Switch Profile, Hume Settings) and TV settings
+  ("wifi", "bluetooth", "screensaver"…).
+- **Movies & TV**: every title on any streaming service in India from JustWatch — Hindi and
+  regional titles included, and searches typed in Hindi (पंचायत) work — as posters with the logos
+  of the services that have each one. With Stremio or Nuvio installed, **On Stremio** adds titles
+  only Stremio's catalogue has. Titles are searched once typing pauses; repeat searches are
+  instant.
+- **How to Watch**: OK on a poster opens the title's page (artwork, year, genres, IMDb rating,
+  summary) with a button per app: **▶ Open in …** for apps you have (straight to the title where
+  the app allows it) and **Get …** for the rest (the app's Play Store page), each marked
+  *Subscription*, *Free*, *Free with ads*, *Rent* or *Buy*.
+- **Any service, no list**: Hume matches each service to its app itself — the app named in the
+  service's Android TV link, an installed app that opens the service's website, or an installed
+  app with the same name — so new services work without an update.
+- Settings → Home → Search: turn Movies & TV results off, or clear recent searches. Searches go
+  only to JustWatch (and Stremio's catalogue when Stremio/Nuvio is installed); nothing is logged.
 
 ## Carousel (top shelf)
 
