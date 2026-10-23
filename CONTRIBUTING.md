@@ -135,7 +135,11 @@ Include the numbers in your PR. `--es perf <layer>` (see getting-started) helps 
 - The accessibility service (`PowerService`) does only what the user asked from Hume (sleep, close
   apps). Don't extend it to read screen content.
 - No analytics, no tracking, no accounts. Network calls go only to the content sources a feature
-  needs (weather, news, recommendations, IP location) and never send personal data.
+  needs (weather, news, recommendations, search, IP location) and never send personal data.
+  Search queries go only to JustWatch (and Stremio's Cinemeta when Stremio/Nuvio is installed);
+  recent searches stay on the TV.
+- The microphone is used only while the user is dictating in Search (after Android's own prompt);
+  Hume never records or stores audio itself.
 - Never commit secrets (API tokens, passwords) — TMDB keys are entered by the user at runtime.
 
 ## 7. Testing a change

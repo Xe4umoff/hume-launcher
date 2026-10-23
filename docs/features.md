@@ -113,6 +113,12 @@ it, so it can't open Hume's Search.)
 - Settings → Home → Search: turn Movies & TV results off, or clear recent searches. Searches go
   only to JustWatch (and Stremio's catalogue when Stremio/Nuvio is installed); nothing is logged.
 
+| | |
+|---|---|
+| ![Search before typing](images/search-empty.jpg) | ![Movies & TV results](images/search-results.jpg) |
+| ![Apps & Settings and titles](images/search-apps-settings.jpg) | ![How to Watch: Open](images/search-how-to-watch.jpg) |
+| ![How to Watch: Get](images/search-get.jpg) | ![Search button in the status row](images/status-row-search.jpg) |
+
 ## Carousel (top shelf)
 
 Full-screen artwork behind the dock while a dock app is focused. One carousel holds, in order:
@@ -128,7 +134,10 @@ Full-screen artwork behind the dock while a dock app is focused. One carousel ho
   page in the app.
 - **Stremio** as the source instead: Cinemeta's popular movies and series (no key). **▶ Open**
   goes to the title's page in **Stremio**, or in **[Nuvio](https://github.com/NuvioMedia/NuvioTV)**
-  when only Nuvio is installed; **Get** opens Stremio on the Play Store.
+  when only Nuvio is installed; **Get** opens Stremio on the Play Store. Settings → Top Shelf →
+  Source; with Stremio chosen, *Opens in* shows which app will be used.
+
+  ![Stremio as the source](images/settings-stremio.jpg)
 - **News**: India, local (your city, from the weather location) and world, from Indian newsrooms'
   RSS feeds with large images: Times of India, Hindustan Times, The Indian Express, India Today and
   News18 by default (NDTV and The Hindu optional). An editorial layout made for reading: headline,
