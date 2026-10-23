@@ -57,7 +57,9 @@ Settings → Home → **Run setup again** repeats it. If Home is pressed mid-way
 | Carousel | Left / Right | Previous / next item (wraps around) |
 | Carousel (Continue Watching item) | Right | Moves from **Resume** to **Remove** |
 | Status row | Left / Right | Weather pill ⇄ Refresh ⇄ Search ⇄ Control Center ⇄ avatar |
-| Anywhere on Home | Search / mic key on the remote | Opens Search and starts dictation |
+| Anywhere on Home | Hold Back (about half a second) | Opens Search (a short press of Back works as before) |
+| Anywhere on Home | Search key on remotes that have one | Opens Search and starts dictation |
+| Anywhere on Home | Keyboard: type a letter or digit · `/` · Ctrl+F · Ctrl+K | Opens Search (with the letter typed) |
 | Status row | Down | Carousel (or dock) |
 | Anywhere | Home | Closes any overlay and goes to the first app in the dock |
 | Idle screen | Any key | Brings the Home Screen back (the press doesn't move focus) |
@@ -79,15 +81,18 @@ bright artwork and lightens over dark artwork, so white text stays legible.
 
 ## Search
 
-The magnifier next to Control Center (or the remote's Search key) opens Search over the blurred
-Home Screen, as on tvOS: what you typed at the top, a one-row keyboard under it, results below.
+The magnifier next to Control Center opens Search over the blurred Home Screen, as on tvOS: what
+you typed at the top, a one-row keyboard under it, results below. Shortcuts: **hold Back** on any
+remote, the Search key on remotes that have one, or just start typing on a keyboard. (The
+Assistant/mic button on most Android TV remotes is taken by Google Assistant before any app sees
+it, so it can't open Hume's Search.)
 
 - **Keyboard**: a–z, space, delete, **123** (digits and punctuation), **अआ** (Hindi letters) and
   clear. A USB/Bluetooth keyboard and the remote's number keys type too.
 - **Dictation**: the **mic** beside the search field (Up from the keyboard), or the remote's
   search/mic button on Home or in Search. Where the TV has Google's voice service, the words appear
   in the field as you speak and results follow; the microphone is asked for on screen the first
-  time. Without that permission or service, the TV's own voice prompt (Google's) listens instead.
+  time. Esc on a keyboard, or Back, closes Search. Without that permission or service, the TV's own voice prompt (Google's) listens instead.
   English and Hindi (Indian English, with Hindi as a second language).
 - **Before typing**: your recent searches (per profile) and what's trending in the carousel.
 - **Apps & Settings** (instant, no internet): installed apps including hidden ones, TV inputs

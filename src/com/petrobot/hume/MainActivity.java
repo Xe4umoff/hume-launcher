@@ -2740,10 +2740,12 @@ public class MainActivity extends Activity {
             return true;
         }
         resetIdle();
-        navSound(this, ev);
+        if (!replayingBack) navSound(this, ev);  // a replayed Back already clicked
         if (search != null && pickerLayer == search.layer && menuLayer == null) {
             return search.dispatch(ev) || super.dispatchKeyEvent(ev);
         }
+        if (pickerLayer == null && menuLayer == null && moveIndex < 0 && keyboardSearch(ev)) return true;
+        if (pickerLayer == null && menuLayer == null && moveIndex < 0 && holdBackSearch(ev)) return true;
         if (ev.getKeyCode() == KeyEvent.KEYCODE_SEARCH && pickerLayer == null && menuLayer == null && moveIndex < 0) {
             // The remote's search/mic button: open Search and start listening, like tvOS's Siri button.
             if (ev.getAction() == KeyEvent.ACTION_UP) {
@@ -3961,6 +3963,64 @@ public class MainActivity extends Activity {
             }
         }).start();
         if (q != null && !q.isEmpty()) search.setQuery(q);
+    }
+
+    /** Back pressed on Home, held until the long-press timeout: open Search (the release is swallowed). */
+    final Runnable backHold = () -> {
+        backDown = null;
+        swallowUp = true;
+        showSearch(null);
+    };
+    KeyEvent backDown;
+    boolean replayingBack;
+
+    /**
+     * The remote shortcut for Search: hold Back on Home. A short press must still behave exactly
+     * as before, so Back is held back until it is released (or held long enough), then replayed.
+     */
+    boolean holdBackSearch(KeyEvent ev) {
+        if (ev.getKeyCode() != KeyEvent.KEYCODE_BACK || replayingBack) return false;
+        if (ev.getAction() == KeyEvent.ACTION_DOWN) {
+            if (ev.getRepeatCount() == 0) {
+                backDown = new KeyEvent(ev);
+                handler.removeCallbacks(backHold);
+                handler.postDelayed(backHold, android.view.ViewConfiguration.getLongPressTimeout());
+            } else if (ev.isLongPress() && backDown != null) {
+                handler.removeCallbacks(backHold);  // the system's own long-press signal came first
+                backHold.run();
+            }
+            return true;
+        }
+        handler.removeCallbacks(backHold);
+        KeyEvent d = backDown;
+        backDown = null;
+        if (d == null) return true;
+        replayingBack = true;
+        try {
+            dispatchKeyEvent(d);
+            dispatchKeyEvent(ev);
+        } finally {
+            replayingBack = false;
+        }
+        return true;
+    }
+
+    /**
+     * Keyboard shortcuts on Home (a USB/Bluetooth keyboard, not the remote): typing a letter or
+     * digit opens Search with it typed; "/", Ctrl+F and Ctrl+K open it empty.
+     */
+    boolean keyboardSearch(KeyEvent ev) {
+        if (ev.getAction() != KeyEvent.ACTION_DOWN || ev.getRepeatCount() > 0) return false;
+        android.view.InputDevice dev = ev.getDevice();
+        if (dev == null || dev.getKeyboardType() != android.view.InputDevice.KEYBOARD_TYPE_ALPHABETIC) return false;
+        int k = ev.getKeyCode();
+        boolean shortcut = (ev.isCtrlPressed() && (k == KeyEvent.KEYCODE_F || k == KeyEvent.KEYCODE_K))
+                || (k == KeyEvent.KEYCODE_SLASH && !ev.isCtrlPressed() && !ev.isAltPressed());
+        int ch = ev.isCtrlPressed() || ev.isAltPressed() || ev.isMetaPressed() ? 0 : ev.getUnicodeChar();
+        if (!shortcut && !Character.isLetterOrDigit(ch)) return false;
+        swallowUp = true;  // the key's release must not reach the search screen
+        showSearch(shortcut ? null : String.valueOf((char) ch).toLowerCase());
+        return true;
     }
 
     void closeSearch() {
