@@ -57,7 +57,7 @@ Settings → Home → **Run setup again** repeats it. If Home is pressed mid-way
 | Carousel | Left / Right | Previous / next item (wraps around) |
 | Carousel (Continue Watching item) | Right | Moves from **Resume** to **Remove** |
 | Status row | Left / Right | Weather pill ⇄ Refresh ⇄ Search ⇄ Control Center ⇄ avatar |
-| Anywhere on Home | Search key on the remote | Opens Search |
+| Anywhere on Home | Search / mic key on the remote | Opens Search and starts dictation |
 | Status row | Down | Carousel (or dock) |
 | Anywhere | Home | Closes any overlay and goes to the first app in the dock |
 | Idle screen | Any key | Brings the Home Screen back (the press doesn't move focus) |
@@ -82,9 +82,13 @@ bright artwork and lightens over dark artwork, so white text stays legible.
 The magnifier next to Control Center (or the remote's Search key) opens Search over the blurred
 Home Screen, as on tvOS: what you typed at the top, a one-row keyboard under it, results below.
 
-- **Keyboard**: a–z, space, delete, **123** (digits and punctuation), **अआ** (Hindi letters), a
-  **mic** where the TV has voice input, and clear. A USB/Bluetooth keyboard and the remote's number
-  keys type too.
+- **Keyboard**: a–z, space, delete, **123** (digits and punctuation), **अआ** (Hindi letters) and
+  clear. A USB/Bluetooth keyboard and the remote's number keys type too.
+- **Dictation**: the **mic** beside the search field (Up from the keyboard), or the remote's
+  search/mic button on Home or in Search. Where the TV has Google's voice service, the words appear
+  in the field as you speak and results follow; the microphone is asked for on screen the first
+  time. Without that permission or service, the TV's own voice prompt (Google's) listens instead.
+  English and Hindi (Indian English, with Hindi as a second language).
 - **Before typing**: your recent searches (per profile) and what's trending in the carousel.
 - **Apps & Settings** (instant, no internet): installed apps including hidden ones, TV inputs
   ("HDMI 2"), Hume screens (Control Center, Weather, Switch Profile, Hume Settings) and TV settings
@@ -234,6 +238,7 @@ Hume asks on screen wherever the TV allows it; adb is only a last resort.
 | Wi-Fi name (location) | Android's permission prompt |
 | Continue Watching & Do Not Disturb | The system notification-access screen. Not possible on low-RAM (1 GB) TVs, where Android disables it — Hume says so |
 | Power Off & Sleep Timer | Android's "Activate device admin app?" screen; where device admin is switched off (e.g. Mi Box), Hume's accessibility switch **Hume Launcher – Power Off** in the TV's Accessibility settings (opened for you). The same switch lets Clean close apps |
+| Search dictation (microphone) | Android's permission prompt the first time the mic is used; without it, the TV's voice prompt is used |
 | Home screen | Android 10+ "default home app" prompt, the TV's Home-app settings, or Android's chooser; Hume offers this once if another launcher is home |
 
 Only when a TV has none of these screens is the one-time adb command shown.

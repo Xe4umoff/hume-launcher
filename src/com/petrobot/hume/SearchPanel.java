@@ -7,7 +7,12 @@ import android.graphics.Outline;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.provider.Settings;
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.os.Bundle;
+import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
+import android.speech.SpeechRecognizer;
 import android.text.TextUtils;
 import android.util.LruCache;
 import android.view.Gravity;
@@ -42,7 +47,7 @@ import java.util.concurrent.Executors;
  */
 final class SearchPanel {
 
-    static final int REQ_VOICE = 7301;
+    static final int REQ_VOICE = 7301, REQ_MIC = 7302;
     static final long DEBOUNCE_MS = 350;
     static final String LATIN = "abcdefghijklmnopqrstuvwxyz";
     static final String DIGITS = "1234567890.-'&:!?";
@@ -78,7 +83,12 @@ final class SearchPanel {
         }
     };
     final Runnable fetch = this::fetchTitles;
-    final boolean voice;
+    /** The TV has voice input (a prompt app); live dictates in place when it also has a speech service. */
+    final boolean voice, live;
+    ImageView mic;
+    GradientDrawable micBg;
+    SpeechRecognizer recognizer;
+    boolean listening, heard;
     int mode, gen;
     String failed;
     FrameLayout sheet;
@@ -91,6 +101,7 @@ final class SearchPanel {
         this.a = a;
         apps = Search.apps(a, a.all);
         voice = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).resolveActivity(a.getPackageManager()) != null;
+        live = SpeechRecognizer.isRecognitionAvailable(a);
 
         layer = new FrameLayout(a);
         layer.setClickable(true);
@@ -102,11 +113,36 @@ final class SearchPanel {
         col.setClipChildren(false);
         layer.addView(col, a.match());
 
+        // Header: the dictation mic (as in tvOS's search field) and what you typed or said.
+        LinearLayout head = new LinearLayout(a);
+        head.setOrientation(LinearLayout.HORIZONTAL);
+        head.setGravity(Gravity.CENTER_VERTICAL);
+        head.setClipChildren(false);
+        head.setPadding(a.dockOuter, a.dp(30), a.dockOuter, 0);
+        if (voice || live) {
+            mic = new ImageView(a);
+            mic.setId(View.generateViewId());
+            mic.setScaleType(ImageView.ScaleType.CENTER);
+            mic.setFocusable(true);
+            mic.setClickable(true);
+            micBg = new GradientDrawable();
+            micBg.setShape(GradientDrawable.OVAL);
+            mic.setBackground(micBg);
+            mic.setOnFocusChangeListener((v, has) -> {
+                paintMic();
+                v.animate().scaleX(has ? 1.12f : 1f).scaleY(has ? 1.12f : 1f).setDuration(180).setInterpolator(MainActivity.LIFT).start();
+            });
+            mic.setOnClickListener(v -> listen());
+            paintMic();
+            LinearLayout.LayoutParams mlp = new LinearLayout.LayoutParams(a.dp(34), a.dp(34));
+            mlp.rightMargin = a.dp(14);
+            head.addView(mic, mlp);
+        }
         queryView = a.text(26, Ui.font(a, "display"), 1f);
         queryView.setSingleLine(true);
         queryView.setEllipsize(TextUtils.TruncateAt.START);
-        queryView.setPadding(a.dockOuter, a.dp(34), a.dockOuter, 0);
-        col.addView(queryView, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        head.addView(queryView, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+        col.addView(head, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         keyScroll = new HorizontalScrollView(a);
         keyScroll.setHorizontalScrollBarEnabled(false);
@@ -154,7 +190,6 @@ final class SearchPanel {
         made.add(key("⌫", a.dp(40), this::backspace));
         made.add(key(mode == 1 ? "abc" : "123", a.dp(48), () -> switchMode(mode == 1 ? 0 : 1)));
         made.add(key(mode == 2 ? "abc" : "अआ", a.dp(48), () -> switchMode(mode == 2 ? 0 : 2)));
-        if (voice) made.add(key("mic", a.dp(40), this::listen));
         made.add(key("clear", a.dp(56), this::clear));
         View focus = made.get(0);
         for (View k : made) {
@@ -178,24 +213,14 @@ final class SearchPanel {
         bg.setCornerRadius(a.dp(8));
         bg.setColor(0x00FFFFFF);
         k.setBackground(bg);
-        View face;
-        if (label.equals("mic")) {
-            ImageView iv = new ImageView(a);
-            iv.setScaleType(ImageView.ScaleType.CENTER);
-            iv.setImageBitmap(Glyphs.get("mic", a.dp(20), Color.WHITE));
-            face = iv;
-        } else {
-            TextView t = a.text(label.length() > 2 ? 13 : 17, Ui.font(a, "medium"), 1f);
-            t.setText(label);
-            t.setGravity(Gravity.CENTER);
-            t.setShadowLayer(0, 0, 0, 0);
-            face = t;
-        }
+        TextView face = a.text(label.length() > 2 ? 13 : 17, Ui.font(a, "medium"), 1f);
+        face.setText(label);
+        face.setGravity(Gravity.CENTER);
+        face.setShadowLayer(0, 0, 0, 0);
         k.addView(face, a.match());
         k.setOnFocusChangeListener((v, has) -> {
             bg.setColor(has ? Color.WHITE : 0x00FFFFFF);
-            if (face instanceof TextView) ((TextView) face).setTextColor(has ? 0xFF111114 : Color.WHITE);
-            else ((ImageView) face).setImageBitmap(Glyphs.get("mic", a.dp(20), has ? 0xFF111114 : Color.WHITE));
+            face.setTextColor(has ? 0xFF111114 : Color.WHITE);
             v.animate().scaleX(has ? 1.15f : 1f).scaleY(has ? 1.15f : 1f).setDuration(150).start();
         });
         k.setOnClickListener(v -> click.run());
@@ -235,15 +260,139 @@ final class SearchPanel {
         changed();
     }
 
+    // ---------------------------------------------------------------- dictation
+
+    /** Focused white; red while listening; glass otherwise. */
+    void paintMic() {
+        if (mic == null) return;
+        boolean f = mic.isFocused();
+        micBg.setColor(listening ? 0xFFFF3B30 : f ? Color.WHITE : 0x26FFFFFF);
+        mic.setImageBitmap(Glyphs.get("mic", a.dp(20), listening || !f ? Color.WHITE : 0xFF111114));
+    }
+
+    /**
+     * Dictation. With the TV's speech service (Google's on Android TV) and the microphone allowed,
+     * the words appear in the search field as you speak and results follow; otherwise the TV's
+     * own voice prompt (Google's) listens and hands back what it heard. The microphone is asked
+     * for on screen the first time. Pressing the mic again stops listening.
+     */
     void listen() {
-        Intent i = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
-                .putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-                .putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en-IN")
-                .putExtra(RecognizerIntent.EXTRA_PROMPT, "Say a movie, show or app");
+        if (listening) {
+            if (recognizer != null) recognizer.stopListening();
+            return;
+        }
+        if (!live) {
+            prompt();
+            return;
+        }
+        if (a.checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            a.requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO}, REQ_MIC);
+            return;
+        }
         try {
+            if (recognizer == null) {
+                recognizer = SpeechRecognizer.createSpeechRecognizer(a);
+                recognizer.setRecognitionListener(new Dictation());
+            }
+            listening = true;
+            heard = false;
+            paintMic();
+            showQuery();
+            recognizer.startListening(speechIntent());
+        } catch (Exception e) {
+            stopped();
+            prompt();
+        }
+    }
+
+    /** The microphone prompt was answered: dictate in place, or fall back to the voice prompt. */
+    void onMicPermission(boolean granted) {
+        if (granted) listen();
+        else prompt();
+    }
+
+    Intent speechIntent() {
+        return new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
+                .putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_WEB_SEARCH)
+                .putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en-IN")
+                .putExtra("android.speech.extra.EXTRA_ADDITIONAL_LANGUAGES", new String[]{"hi-IN"})
+                .putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
+                .putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1)
+                .putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, a.getPackageName())
+                .putExtra(RecognizerIntent.EXTRA_PROMPT, "Say a movie, show or app");
+    }
+
+    /** The TV's own voice prompt (Google's on Android TV); the answer arrives in onVoice. */
+    void prompt() {
+        if (!voice) {
+            a.toast("Voice input isn't available on this TV");
+            return;
+        }
+        try {
+            Intent i = speechIntent();
+            i.removeExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS);
             a.startActivityForResult(i, REQ_VOICE);
         } catch (Exception e) {
-            a.toast("Voice search isn't available on this TV");
+            a.toast("Voice input isn't available on this TV");
+        }
+    }
+
+    void stopped() {
+        listening = false;
+        if (mic != null) mic.animate().scaleX(mic.isFocused() ? 1.12f : 1f).scaleY(mic.isFocused() ? 1.12f : 1f).setDuration(150).start();
+        paintMic();
+        showQuery();
+    }
+
+    /** Live words go straight into the query, so results follow the voice like typing. */
+    final class Dictation implements RecognitionListener {
+        @Override public void onReadyForSpeech(Bundle b) { }
+        @Override public void onBeginningOfSpeech() { }
+        @Override public void onBufferReceived(byte[] buf) { }
+        @Override public void onEndOfSpeech() { }
+        @Override public void onEvent(int type, Bundle b) { }
+
+        /** The mic swells gently with the voice level, only while listening. */
+        @Override public void onRmsChanged(float db) {
+            if (mic == null || !listening) return;
+            float s = 1f + Math.max(0f, Math.min(1f, (db + 2f) / 12f)) * 0.18f;
+            mic.setScaleX(s);
+            mic.setScaleY(s);
+        }
+
+        @Override public void onPartialResults(Bundle b) {
+            String t = first(b);
+            if (!t.isEmpty() && !closed) {
+                heard = true;
+                setQuery(t.toLowerCase());
+            }
+        }
+
+        @Override public void onResults(Bundle b) {
+            String t = first(b);
+            if (closed) return;
+            stopped();
+            if (!t.isEmpty()) setQuery(t.toLowerCase());
+        }
+
+        @Override public void onError(int error) {
+            if (closed) return;
+            boolean wasHeard = heard;
+            stopped();
+            if (error == SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS
+                    || (!wasHeard && (error == SpeechRecognizer.ERROR_CLIENT || error == SpeechRecognizer.ERROR_SERVER
+                    || error == SpeechRecognizer.ERROR_RECOGNIZER_BUSY))) {
+                prompt();  // the service won't dictate for us: use the TV's voice prompt
+            } else if (!wasHeard) {
+                queryView.setText(error == SpeechRecognizer.ERROR_NETWORK || error == SpeechRecognizer.ERROR_NETWORK_TIMEOUT
+                        ? "Voice needs the internet" : "Didn\u2019t catch that \u2014 press the mic to try again");
+                queryView.setAlpha(0.6f);
+            }
+        }
+
+        String first(Bundle b) {
+            ArrayList<String> r = b == null ? null : b.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+            return r == null || r.isEmpty() || r.get(0) == null ? "" : r.get(0).trim();
         }
     }
 
@@ -255,7 +404,7 @@ final class SearchPanel {
 
     void showQuery() {
         boolean empty = query.length() == 0;
-        queryView.setText(empty ? "Search apps, movies and shows" : query);
+        queryView.setText(empty ? (listening ? "Listening\u2026" : "Search apps, movies and shows") : query);
         queryView.setAlpha(empty ? 0.45f : 1f);
     }
 
@@ -834,8 +983,11 @@ final class SearchPanel {
             if (down) backspace();
             return true;
         }
-        if (k == KeyEvent.KEYCODE_SEARCH) {
-            if (down) firstKey().requestFocus();
+        if (k == KeyEvent.KEYCODE_SEARCH || k == KeyEvent.KEYCODE_VOICE_ASSIST) {
+            if (!down && ev.getRepeatCount() == 0) {
+                if (mic != null) mic.requestFocus();
+                listen();
+            }
             return true;
         }
         if (down && k != KeyEvent.KEYCODE_DPAD_CENTER && k != KeyEvent.KEYCODE_ENTER) {
@@ -845,8 +997,19 @@ final class SearchPanel {
                 return true;
             }
         }
-        // Down from the keyboard lands on the first item of the first row, not wherever is nearest.
         View f = a.getCurrentFocus();
+        if (mic != null && k == KeyEvent.KEYCODE_DPAD_UP && f != null && f.getParent() == keys) {
+            if (down) mic.requestFocus();
+            return true;
+        }
+        if (f == mic && mic != null) {
+            if (k == KeyEvent.KEYCODE_DPAD_DOWN) {
+                if (down) firstKey().requestFocus();
+                return true;
+            }
+            if (k == KeyEvent.KEYCODE_DPAD_UP || k == KeyEvent.KEYCODE_DPAD_LEFT || k == KeyEvent.KEYCODE_DPAD_RIGHT) return true;
+        }
+        // Down from the keyboard lands on the first item of the first row, not wherever is nearest.
         if (k == KeyEvent.KEYCODE_DPAD_DOWN && f != null && f.getParent() == keys) {
             if (down) {
                 View first = firstResult();
@@ -884,6 +1047,10 @@ final class SearchPanel {
     /** Stops work and frees images; the layer itself is removed by MainActivity. */
     void release() {
         closed = true;
+        if (recognizer != null) {
+            recognizer.destroy();
+            recognizer = null;
+        }
         a.handler.removeCallbacks(fetch);
         Search.cancel();
         net.shutdownNow();

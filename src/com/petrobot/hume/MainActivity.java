@@ -2745,7 +2745,12 @@ public class MainActivity extends Activity {
             return search.dispatch(ev) || super.dispatchKeyEvent(ev);
         }
         if (ev.getKeyCode() == KeyEvent.KEYCODE_SEARCH && pickerLayer == null && menuLayer == null && moveIndex < 0) {
-            if (ev.getAction() == KeyEvent.ACTION_UP) showSearch(null);
+            // The remote's search/mic button: open Search and start listening, like tvOS's Siri button.
+            if (ev.getAction() == KeyEvent.ACTION_UP) {
+                showSearch(null);
+                if (search.mic != null) search.mic.requestFocus();
+                search.listen();
+            }
             return true;
         }
         if (pickerLayer != null && menuLayer == null) {
@@ -3992,6 +3997,14 @@ public class MainActivity extends Activity {
     protected void onActivityResult(int req, int res, Intent data) {
         super.onActivityResult(req, res, data);
         if (req == SearchPanel.REQ_VOICE && res == RESULT_OK && search != null) search.onVoice(data);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int req, String[] perms, int[] results) {
+        super.onRequestPermissionsResult(req, perms, results);
+        if (req == SearchPanel.REQ_MIC && search != null) {
+            search.onMicPermission(results.length > 0 && results[0] == PackageManager.PERMISSION_GRANTED);
+        }
     }
 
     boolean statusFocused() {
